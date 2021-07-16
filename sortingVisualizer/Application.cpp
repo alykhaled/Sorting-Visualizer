@@ -27,7 +27,7 @@ void Draw(vector<int>& colors, Renderer& renderer, Shader& shader, vector<Vertex
 {
     renderer.Clear();
 
-    for (int i = 0; i < 30; i++)
+    for (int i = 0; i < 38; i++)
     {
         glm::mat4 model = glm::translate(glm::mat4(1.0f), translations[i]);
         glm::mat4 mvp = result * model;
@@ -54,35 +54,105 @@ void Draw(vector<int>& colors, Renderer& renderer, Shader& shader, vector<Vertex
     glfwSwapBuffers(window);
     glfwPollEvents();
 }
-int partition(int arr[], int low, int high)
+int partition(vector<int>& colors, vector<float>& array, int low, int high, Renderer& renderer, Shader& shader, vector<VertexArray>& vas, vector<glm::vec3>& translations, glm::mat4& result, IndexBuffer& ib, GLFWwindow* window)
 {
-    int pivot = arr[high]; // pivot
+    int pivot = array[high]; // pivot
+    int p = high;
     int i = (low - 1); // Index of smaller element and indicates the right position of pivot found so far
 
     for (int j = low; j <= high - 1; j++)
     {
         // If current element is smaller than the pivot
-        if (arr[j] < pivot)
+        colors[j] = 1;
+        colors[p] = 1;
+        Draw(colors, renderer, shader, vas, translations, result, ib, window);
+        Sleep(200);
+        if (array[j] < pivot)
         {
+            colors[j] = 2;
+            colors[p] = 2;
+            
             i++; // increment index of smaller element
-            swap(arr[i], arr[j]);
+            colors[i] = 2;
+            Draw(colors, renderer, shader, vas, translations, result, ib, window);
+            Sleep(200);
+            swap(array[i], array[j]);
+            float position1[] = {
+                  0.0f,   0.0f,   //Bottom Left
+                  20.0f,  0.0f,   //Bottom Right
+                  20.f,   array[i], //Top right
+                  0.0f,   array[i] //Top Left 
+            };
+            float position2[] = {
+               0.0f,   0.0f,   //Bottom Left
+               20.0f,  0.0f,   //Bottom Right
+               20.f,   array[j], //Top right
+               0.0f,   array[j] //Top Left 
+            };
+            vas[i].changeData(position1);
+            vas[i].UnBind();
+            vas[j].changeData(position2);
+            vas[j].UnBind();
+            Draw(colors, renderer, shader, vas, translations, result, ib, window);
+            Sleep(200);
+            colors[j] = 0;
+            colors[p] = 0;
+            colors[i] = 0;
+
+            Draw(colors, renderer, shader, vas, translations, result, ib, window);
+            Sleep(200);
+
         }
+        else
+        {
+            colors[j] = 0;
+            colors[p] = 0;
+            //colors[i] = 0;
+            Draw(colors, renderer, shader, vas, translations, result, ib, window);
+            Sleep(100);
+        }
+
     }
-    swap(arr[i + 1], arr[high]);
+    colors[i+1] = 2;
+    colors[high] = 2;
+    Draw(colors, renderer, shader, vas, translations, result, ib, window);
+    Sleep(200);
+    swap(array[i + 1], array[high]);
+    float position1[] = {
+                  0.0f,   0.0f,   //Bottom Left
+                  20.0f,  0.0f,   //Bottom Right
+                  20.f,   array[i + 1], //Top right
+                  0.0f,   array[i + 1] //Top Left 
+    };
+    float position2[] = {
+       0.0f,   0.0f,   //Bottom Left
+       20.0f,  0.0f,   //Bottom Right
+       20.f,   array[high], //Top right
+       0.0f,   array[high] //Top Left 
+    };
+    vas[i+1].changeData(position1);
+    vas[i+1].UnBind();
+    vas[high].changeData(position2);
+    vas[high].UnBind();
+    //swap(translations[j].x, translations[j + 1].x);
+    colors[i + 1] = 0;
+    colors[high] = 0;
+    Draw(colors, renderer, shader, vas, translations, result, ib, window);
+    Sleep(200);
     return (i + 1);
 }
-void quickSort(int arr[], int low, int high)
+void quickSort(vector<int>& colors, vector<float>& array, int low, int high, Renderer& renderer, Shader& shader, vector<VertexArray>& vas, vector<glm::vec3>& translations, glm::mat4& result, IndexBuffer& ib, GLFWwindow* window)
 {
     if (low < high)
     {
         /* pi is partitioning index, arr[p] is now
         at right place */
-        int pi = partition(arr, low, high);
+        int pi = partition(colors,array, low, high, renderer, shader, vas, translations, result, ib, window);
 
         // Separately sort elements before
         // partition and after partition
-        quickSort(arr, low, pi - 1);
-        quickSort(arr, pi + 1, high);
+        quickSort(colors,array, low, pi - 1, renderer, shader, vas, translations, result, ib, window);
+        quickSort(colors, array, pi + 1, high, renderer, shader, vas, translations, result, ib, window);
     }
 }
 void bubblesort(vector<int>& colors,vector<float> &array, int const n, Renderer& renderer, Shader& shader, vector<VertexArray>& vas, vector<glm::vec3>& translations, glm::mat4& result, IndexBuffer& ib, GLFWwindow* window)
@@ -171,8 +241,8 @@ int main(void)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     //////////////////////////////////////////////////////////////
 
-    vector<vector<float>> positions(30);
-    vector<VertexArray> vas(30);
+    vector<vector<float>> positions(38);
+    vector<VertexArray> vas(38);
     VertexBufferLayout layouts;
     layouts.Push<float>(2);
 
@@ -183,9 +253,9 @@ int main(void)
     //    0.0f,   20.0f,  //Top Left 
     //};
     srand((unsigned)time(0));
-    vector<float> heights(30);
+    vector<float> heights(38);
 
-    for (int i = 0; i < 30; i++)
+    for (int i = 0; i < 38; i++)
     {
         float result = 10 + (rand() % 960);
         heights[i] = result;
@@ -221,19 +291,21 @@ int main(void)
     }*/
 
     Renderer renderer;
-    vector<glm::vec3> translations(30);
+    vector<glm::vec3> translations(38);
 
     Shader shader;
     float stepX = 0;
-    vector<int> colors(30);
-    for (int i = 0; i < 30; i++)
+    vector<int> colors(38);
+    for (int i = 0; i < 38; i++)
     {
         translations[i].x = stepX;
         translations[i].y = 0;
         stepX += 25;
     }
 
-    bubblesort(colors, heights, 30, renderer, shader, vas, translations, result, ib, window);
+    bubblesort(colors, heights, 38, renderer, shader, vas, translations, result, ib, window);
+    //quickSort(colors, heights, 0,29, renderer, shader, vas, translations, result, ib, window);
+
     while (!glfwWindowShouldClose(window))
     {
         Draw(colors,renderer,shader,vas,translations,result,ib,window);
