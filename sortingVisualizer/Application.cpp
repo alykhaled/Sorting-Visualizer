@@ -166,11 +166,13 @@ void bubblesort(vector<int>& colors,vector<float> &array, int const n, Renderer&
             colors[j] = 1;
             colors[j + 1] = 1;
             Draw(colors, renderer, shader, vas, translations, result, ib, window);
+            Sleep(100);
             if (array[j] > array[j + 1])
             {
                 colors[j] = 2;
                 colors[j + 1] = 2;
                 Draw(colors, renderer, shader, vas, translations, result, ib, window);
+                Sleep(100);
                 colors[j] = 0;
                 colors[j + 1] = 0;
 
@@ -194,6 +196,7 @@ void bubblesort(vector<int>& colors,vector<float> &array, int const n, Renderer&
                 vas[j+1].UnBind();
                 //swap(translations[j].x, translations[j + 1].x);
                 Draw(colors, renderer, shader, vas, translations, result, ib, window);
+                Sleep(100);
 
             }
             else
@@ -201,7 +204,7 @@ void bubblesort(vector<int>& colors,vector<float> &array, int const n, Renderer&
                 colors[j] = 0;
                 colors[j + 1] = 0;
                 Draw(colors, renderer, shader, vas, translations, result, ib, window);
-
+                Sleep(100);
             }
             
         }
@@ -304,7 +307,7 @@ int main(void)
     }
 
     bubblesort(colors, heights, 38, renderer, shader, vas, translations, result, ib, window);
-    //quickSort(colors, heights, 0,29, renderer, shader, vas, translations, result, ib, window);
+    //quickSort(colors, heights, 0,37, renderer, shader, vas, translations, result, ib, window);
 
     while (!glfwWindowShouldClose(window))
     {
