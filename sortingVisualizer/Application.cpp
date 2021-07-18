@@ -20,14 +20,19 @@
 #include <chrono>
 #include <conio.h>
 #include <time.h>
+#include <thread>
 #include <queue>
 
 using namespace std;
+int countOfNumber = 43;
+int delay = 0;
+int compares = 0;
+
 void Draw(vector<int>& colors, Renderer& renderer, Shader& shader, vector<VertexArray>& vas, vector<glm::vec3>& translations, glm::mat4& result, IndexBuffer& ib, GLFWwindow* window)
 {
     renderer.Clear();
 
-    for (int i = 0; i < 38; i++)
+    for (int i = 0; i < countOfNumber; i++)
     {
         glm::mat4 model = glm::translate(glm::mat4(1.0f), translations[i]);
         glm::mat4 mvp = result * model;
@@ -46,6 +51,11 @@ void Draw(vector<int>& colors, Renderer& renderer, Shader& shader, vector<Vertex
             shader.SetUniform4f("u_Color", 1.0f, 0.0f, 0.0f, 1.0f);
 
         }
+        else if (colors[i] == 3)
+        {
+            shader.SetUniform4f("u_Color", 0.0f, 1.0f, 0.0f, 1.0f);
+
+        }
         shader.Bind();
         vas[i].Bind();
         shader.SetUniformMat4f("u_MVP", mvp);
@@ -54,28 +64,30 @@ void Draw(vector<int>& colors, Renderer& renderer, Shader& shader, vector<Vertex
     glfwSwapBuffers(window);
     glfwPollEvents();
 }
+
 int partition(vector<int>& colors, vector<float>& array, int low, int high, Renderer& renderer, Shader& shader, vector<VertexArray>& vas, vector<glm::vec3>& translations, glm::mat4& result, IndexBuffer& ib, GLFWwindow* window)
 {
     int pivot = array[high]; // pivot
     int p = high;
     int i = (low - 1); // Index of smaller element and indicates the right position of pivot found so far
-
     for (int j = low; j <= high - 1; j++)
     {
         // If current element is smaller than the pivot
         colors[j] = 1;
-        colors[p] = 1;
+        colors[p] = 3;
         Draw(colors, renderer, shader, vas, translations, result, ib, window);
-        Sleep(200);
+        Sleep(delay);
+        compares++;
+
         if (array[j] < pivot)
         {
             colors[j] = 2;
-            colors[p] = 2;
-            
+
             i++; // increment index of smaller element
             colors[i] = 2;
             Draw(colors, renderer, shader, vas, translations, result, ib, window);
-            Sleep(200);
+            Sleep(delay);
+
             swap(array[i], array[j]);
             float position1[] = {
                   0.0f,   0.0f,   //Bottom Left
@@ -94,14 +106,14 @@ int partition(vector<int>& colors, vector<float>& array, int low, int high, Rend
             vas[j].changeData(position2);
             vas[j].UnBind();
             Draw(colors, renderer, shader, vas, translations, result, ib, window);
-            Sleep(200);
+            Sleep(delay);
+
             colors[j] = 0;
             colors[p] = 0;
             colors[i] = 0;
 
             Draw(colors, renderer, shader, vas, translations, result, ib, window);
-            Sleep(200);
-
+ 
         }
         else
         {
@@ -109,15 +121,19 @@ int partition(vector<int>& colors, vector<float>& array, int low, int high, Rend
             colors[p] = 0;
             //colors[i] = 0;
             Draw(colors, renderer, shader, vas, translations, result, ib, window);
-            Sleep(100);
+            Sleep(delay);
+
+ 
         }
 
     }
     colors[i+1] = 2;
-    colors[high] = 2;
+    colors[high] = 3;
     Draw(colors, renderer, shader, vas, translations, result, ib, window);
-    Sleep(200);
+ 
     swap(array[i + 1], array[high]);
+    Sleep(delay);
+
     float position1[] = {
                   0.0f,   0.0f,   //Bottom Left
                   20.0f,  0.0f,   //Bottom Right
@@ -138,7 +154,8 @@ int partition(vector<int>& colors, vector<float>& array, int low, int high, Rend
     colors[i + 1] = 0;
     colors[high] = 0;
     Draw(colors, renderer, shader, vas, translations, result, ib, window);
-    Sleep(200);
+    Sleep(delay);
+
     return (i + 1);
 }
 void quickSort(vector<int>& colors, vector<float>& array, int low, int high, Renderer& renderer, Shader& shader, vector<VertexArray>& vas, vector<glm::vec3>& translations, glm::mat4& result, IndexBuffer& ib, GLFWwindow* window)
@@ -165,14 +182,16 @@ void bubblesort(vector<int>& colors,vector<float> &array, int const n, Renderer&
         {
             colors[j] = 1;
             colors[j + 1] = 1;
-            Draw(colors, renderer, shader, vas, translations, result, ib, window);
-            Sleep(100);
+            Draw(colors, renderer, shader, vas, translations, result, ib, window);  
+            Sleep(delay);
+            compares++;
             if (array[j] > array[j + 1])
             {
                 colors[j] = 2;
                 colors[j + 1] = 2;
                 Draw(colors, renderer, shader, vas, translations, result, ib, window);
-                Sleep(100);
+                Sleep(delay);
+
                 colors[j] = 0;
                 colors[j + 1] = 0;
 
@@ -194,17 +213,16 @@ void bubblesort(vector<int>& colors,vector<float> &array, int const n, Renderer&
                 vas[j].UnBind();
                 vas[j+1].changeData(position2);
                 vas[j+1].UnBind();
-                //swap(translations[j].x, translations[j + 1].x);
                 Draw(colors, renderer, shader, vas, translations, result, ib, window);
-                Sleep(100);
-
+                Sleep(delay);
             }
             else
             {
                 colors[j] = 0;
                 colors[j + 1] = 0;
                 Draw(colors, renderer, shader, vas, translations, result, ib, window);
-                Sleep(100);
+                Sleep(delay);
+
             }
             
         }
@@ -239,26 +257,20 @@ int main(void)
         return -1;
     }
     glfwMakeContextCurrent(window);
+    glfwSwapInterval(1);
     glewInit();
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     //////////////////////////////////////////////////////////////
 
-    vector<vector<float>> positions(38);
-    vector<VertexArray> vas(38);
+    vector<vector<float>> positions(countOfNumber);
+    vector<VertexArray> vas(countOfNumber);
     VertexBufferLayout layouts;
     layouts.Push<float>(2);
-
-    //    = {
-    //    0.0f,   0.0f,   //Bottom Left
-    //    20.0f,  0.0f,   //Bottom Right
-    //    20.0f,  20.0f,  //Top right
-    //    0.0f,   20.0f,  //Top Left 
-    //};
     srand((unsigned)time(0));
-    vector<float> heights(38);
+    vector<float> heights(countOfNumber);
 
-    for (int i = 0; i < 38; i++)
+    for (int i = 0; i < countOfNumber; i++)
     {
         float result = 10 + (rand() % 960);
         heights[i] = result;
@@ -271,7 +283,6 @@ int main(void)
         VertexBuffer* vb = new VertexBuffer(position, 8 * sizeof(float));
         vas[i].AddBuffer(*vb, layouts);
     }
-
 
     unsigned int indices[] = {
         0,1,2,
@@ -288,27 +299,24 @@ int main(void)
     Shader ss;
     ss.Bind();
     ib.UnBind();
-    /*for (int i = 0; i < 20; i++)
-    {
-        vas[i].UnBind();
-    }*/
 
     Renderer renderer;
-    vector<glm::vec3> translations(38);
+    vector<glm::vec3> translations(countOfNumber);
 
     Shader shader;
     float stepX = 0;
-    vector<int> colors(38);
-    for (int i = 0; i < 38; i++)
+    vector<int> colors(countOfNumber);
+    for (int i = 0; i < countOfNumber; i++)
     {
         translations[i].x = stepX;
         translations[i].y = 0;
-        stepX += 25;
+        stepX += 22;
     }
 
-    bubblesort(colors, heights, 38, renderer, shader, vas, translations, result, ib, window);
-    //quickSort(colors, heights, 0,37, renderer, shader, vas, translations, result, ib, window);
+    //bubblesort(colors, heights, countOfNumber, renderer, shader, vas, translations, result, ib, window);
+    quickSort(colors, heights, 0, countOfNumber-1, renderer, shader, vas, translations, result, ib, window);
 
+    cout << compares;
     while (!glfwWindowShouldClose(window))
     {
         Draw(colors,renderer,shader,vas,translations,result,ib,window);
