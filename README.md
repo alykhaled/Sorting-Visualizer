@@ -1,3 +1,3 @@
 # Sorting-Visualizer
 
-Sorting Visualizer using OpenGL
+Implementing sorting visualizer for QuickSort and Bubble Sort using OpenGL
